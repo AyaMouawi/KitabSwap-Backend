@@ -5,7 +5,8 @@ const {
     getAll,
     getById,
     editById,
-    deleteById
+    deleteById,
+    add
   } = require('../controllers/genreController');
 
   const isAuthenticated = require('../middlewares/auth');
@@ -14,5 +15,5 @@ const {
   router.get('/getById/:genreId',getById);
   router.put('/update/:genreId',isAuthenticated(['admin']), editById);
   router.delete('/delete/:genreId', isAuthenticated(['admin']), deleteById)
-
+  router.post('/add',isAuthenticated(['admin']),add)
   module.exports = router;

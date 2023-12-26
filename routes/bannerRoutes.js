@@ -6,7 +6,8 @@ const {
     getHighlighted,
     getById,
     editById,
-    deleteById
+    deleteById,
+    add
   } = require('../controllers/bannerController');
 
   const isAuthenticated = require('../middlewares/auth');
@@ -15,7 +16,8 @@ const {
   router.get('/getHighlighted',getHighlighted);
   router.get('/getById/:bannerId', getById);
   router.put('/update/:bannerId', isAuthenticated(['admin']), editById);
-  router.delete('/delete/:bannerId', isAuthenticated(['admin']), deleteById)
+  router.delete('/delete/:bannerId', isAuthenticated(['admin']), deleteById);
+  router.post('/add',isAuthenticated(['admin']),add)
  
 
   module.exports = router;

@@ -158,6 +158,41 @@ const getAll = async (_, res) => {
         });
       }
     };
+
+    const add = async (req, res) => {
+      const { content, buttonText, link } = req.body;
+
+      const validLinkFormat = isValidLink(link);
+      if (!validLinkFormat) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid link format. Please provide a valid URL.',
+        });
+      }
+    
+      const query = `INSERT INTO banner (content, buttonText, link) VALUES (?, ?, ?)`;
+    
+      try {
+        const [response] = await connection.query(query, [content, buttonText, link]);
+    
+        return res.status(201).json({
+          success: true,
+          message: 'Banner added successfully.',
+          data: { bannerId: response.insertId, content, buttonText, link},
+        });
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Unable to add banner.',
+          error: error.message,
+        });
+      }
+    };
+    
+    const isValidLink = (link) => {
+      const urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+      return urlRegex.test(link);
+    };
   
 
-  module.exports = { getAll, getHighlighted, getById, editById, deleteById};
+  module.exports = { getAll, getHighlighted, getById, editById, deleteById, add};

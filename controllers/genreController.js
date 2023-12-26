@@ -96,6 +96,37 @@ const deleteById = async (req, res) => {
     }
   };
 
+  const add = async (req, res) => {
+    
+    const { genreName } = req.body;
+    const checkQuery = `SELECT * FROM genres WHERE genreName = ?`;
+    const insertQuery = `INSERT INTO genres (genreName) VALUES (?)`;
+  
+    try {
+      const [checkResponse] = await connection.query(checkQuery, [genreName]);
+  
+      if (checkResponse.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Genre '${genreName}' already exists.`,
+        });
+      }
+
+      const [insertResponse] = await connection.query(insertQuery, [genreName]);
+  
+      return res.status(201).json({
+        success: true,
+        message: `Genre '${genreName}' added successfully.`,
+        data: { genreId: insertResponse.insertId, genreName },
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: `Unable to add genre '${genreName}'.`,
+        error: error.message,
+      });
+    }
+  };
 
 
-  module.exports = { getAll, getById, editById, deleteById};
+  module.exports = { getAll, getById, editById, deleteById, add};
