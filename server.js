@@ -8,6 +8,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const userRoutes = require('./routes/userRoutes');
+const genreRoutes = require('./routes/genreRoutes');
 
 const express = require('express');
 const app = express();
@@ -17,6 +18,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use('/user', userRoutes);
+app.use('/genre', genreRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
