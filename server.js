@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 const userRoutes = require('./routes/userRoutes');
 const genreRoutes = require('./routes/genreRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const saleBookRoutes = require('./routes/saleBookRoutes');
 
 const express = require('express');
 const app = express();
@@ -21,6 +22,7 @@ app.use(cors());
 app.use('/user', userRoutes);
 app.use('/genre', genreRoutes);
 app.use('/banner', bannerRoutes);
+app.use('/saleBook', saleBookRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
