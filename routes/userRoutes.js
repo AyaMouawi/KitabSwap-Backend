@@ -15,7 +15,7 @@ const {
   router.get('/getAll', getAll);
   router.get('/getById/:userId', getById);
   router.put('/update/:userId', updateUser);
-  router.delete('/delete/:userId',deleteById);
+  router.delete('/delete/:userId',isAuthenticated(['admin']),deleteById);
   router.post('/login', login);
   router.post('/register', register);
 

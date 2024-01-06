@@ -14,9 +14,9 @@ const {
   const isAuthenticated = require('../middlewares/auth');
 
   router.get('/getByUser/:UserId', getByUser);
-  router.delete('/delete/:UserId', deleteByUserId);
-  router.post('/addToCart/:UserId/:saleBookId', addToCart );
-  router.delete('/removeFromCart/:UserId/:saleBookId', removeFromCart );
+  router.delete('/delete/:UserId',isAuthenticated(['admin']), deleteByUserId);
+  router.post('/addToCart/:UserId/:saleBookId', isAuthenticated(['client']), addToCart );
+  router.delete('/removeFromCart/:UserId/:saleBookId', isAuthenticated(['client']), removeFromCart );
   
 
   module.exports = router; 

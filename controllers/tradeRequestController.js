@@ -16,8 +16,11 @@ const getAll = async (_, res) => {
       return res.status(200).json({
         success: true,
         message: `All Trading requests retrieved successfully.`,
-        data: response,
-      });
+        data: response.map((item) => ({
+            ...item,
+            requestDate: formatDate(item.requestDate),
+          })),
+        });
     } catch (error) {
       return res.status(400).json({
         success: false,
@@ -53,7 +56,10 @@ const getById = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: `Request with id ${tradeRequestId} retrieved successfully.`,
-            data: response,
+            data: response.map((item) => ({
+                ...item,
+                requestDate: formatDate(item.requestDate),
+              })),
         });
     } catch (error) {
         return res.status(400).json({
@@ -90,7 +96,10 @@ const getByUser = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: `Request with user id ${userRequestedId} retrieved successfully.`,
-            data: response,
+            data: response.map((item) => ({
+                ...item,
+                requestDate: formatDate(item.requestDate),
+              })),
         });
     } catch (error) {
         return res.status(400).json({
@@ -125,7 +134,10 @@ const getByTradeBook = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: ` Request with trade book with id ${tradeBookId} retrieved successfully.`,
-        data: response,
+        data: response.map((item) => ({
+            ...item,
+            requestDate: formatDate(item.requestDate),
+          })),
       });
     } catch (error) {
       return res.status(400).json({
@@ -338,6 +350,17 @@ const declineRequest = async (req, res) => {
             message: `Unable to decline Request with id ${tradeRequestId}.`,
             error: error.message,
         });
+    }
+};
+
+const formatDate = (date) => {
+    try {
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        return formattedDate;
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        console.error('Invalid date:', date);
+        return null;
     }
 };
 
