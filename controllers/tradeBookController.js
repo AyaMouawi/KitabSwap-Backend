@@ -24,7 +24,10 @@ const getAll = async (_, res) => {
       return res.status(200).json({
         success: true,
         message: `All Books retrieved successfully.`,
-        data: response,
+        data: response.map((item) => ({
+          ...item,
+          postDate: formatDate(item.postDate),
+        })),
       });
     } catch (error) {
       return res.status(400).json({
@@ -69,7 +72,10 @@ const getAll = async (_, res) => {
       return res.status(200).json({
         success: true,
         message: `book with owner id ${ownerId} retrieved successfully.`,
-        data: response,
+        data: response.map((item) => ({
+          ...item,
+          postDate: formatDate(item.postDate),
+        })),
       });
     } catch (error) {
       return res.status(400).json({
@@ -114,7 +120,10 @@ const getAll = async (_, res) => {
       return res.status(200).json({
         success: true,
         message: `book with id ${tradeBookId} retrieved successfully.`,
-        data: response,
+        data: response.map((item) => ({
+          ...item,
+          postDate: formatDate(item.postDate),
+        })),
       });
     } catch (error) {
       return res.status(400).json({
@@ -292,6 +301,15 @@ const getAll = async (_, res) => {
     }
   };
 
-
+  const formatDate = (date) => {
+    try {
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        return formattedDate;
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        console.error('Invalid date:', date);
+        return null;
+    }
+};
 
   module.exports = { getAll, getByOwnerId, getById, deleteById, add, editById };
