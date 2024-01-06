@@ -13,6 +13,7 @@ const bannerRoutes = require('./routes/bannerRoutes');
 const saleBookRoutes = require('./routes/saleBookRoutes');
 const tradeBookRoutes = require('./routes/tradeBookRoutes');
 const tradeRequestRoutes = require('./routes/tradeRequestRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 
 const express = require('express');
 const app = express();
@@ -27,6 +28,7 @@ app.use('/banner', bannerRoutes);
 app.use('/saleBook', saleBookRoutes);
 app.use('/tradeBook', tradeBookRoutes);
 app.use('/tradeRequest', tradeRequestRoutes);
+app.use('/cart', cartRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
