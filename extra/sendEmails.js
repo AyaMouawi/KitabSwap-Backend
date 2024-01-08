@@ -61,7 +61,7 @@ const sendAcceptEmail = async (ownerEmail, userRequestedName, bookName, ownerBoo
 const sendDeclineEmail = async (ownerEmail, userRequestedName, bookName, ownerBookName) => {
     try {
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+          service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD,
@@ -85,142 +85,133 @@ const sendDeclineEmail = async (ownerEmail, userRequestedName, bookName, ownerBo
 
 
 const sendConfirmationCheckoutToUser = async (userId, orderId, orderInfo, totalPrice) => {
+  try {
+    const [userDetails] = await connection.query(
+      'SELECT firstName, lastName, email FROM users WHERE user_id = ?',
+      [userId]
+    );
 
-    try {
-      const [userDetails] = await connection.query(
-        'SELECT firstName, lastName, email FROM users WHERE user_id = ?',
-        [userId]
+    const userName = `${userDetails[0].firstName} ${userDetails[0].lastName}`;
+    const userEmail = userDetails[0].email;
+
+    const booksDetails = await Promise.all(orderInfo.map(async (item) => {
+      const [bookDetails] = await connection.query(
+        'SELECT title FROM salebooks WHERE saleBook_id = ?',
+        [item.bookId]
       );
-  
-      const userName = `${userDetails[0].firstName} ${userDetails[0].lastName}`;
-      const userEmail = userDetails[0].email;
-  
-      const orderItems = orderInfo.split(' _ ');
-  
-      const booksDetails = await Promise.all(
-        orderItems.map(async (item) => {
-          const [bookDetails] = await connection.query(
-            'SELECT title, price FROM salebooks WHERE saleBook_id = ?',
-            [item.split(',')[0].slice(1)]
-          );
-          return {
-            title: bookDetails[0].title,
-            quantity: item.split(',')[1].trim(),
-            totalPrice: item.split(',')[2].slice(0, -1),
-          };
-        })
-      );
-  
-      const [orderDetails] = await connection.query(
-        'SELECT shipmentMethod FROM orders WHERE order_id = ?',
-        [orderId]
-      );
-  
-      const shipmentMethod = orderDetails[0].shipmentMethod || 'delivery';
-  
-      const totalWithDelivery = (parseFloat(totalPrice) + (shipmentMethod === 'delivery' ? 3 : 0)).toFixed(2);
-  
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: userEmail,
-        subject: 'Order Confirmation',
-        text: `Thank you ${userName} for your Order,\n`
-          + 'Your Order was made successfully\n\n'
-          + 'Order Details:\n'
-          + `orderId: ${orderId}\n`
-          + 'Order Info:\n'
-          + booksDetails.map((item, index) => `${index + 1}- (${item.title}, ${item.quantity}, ${item.totalPrice})`).join('\n')
-          + `\nShipment Method: ${shipmentMethod}\n`
-          + `Total Price: ${totalWithDelivery} ${shipmentMethod === 'delivery' ? '(including $3 delivery cost)' : ''}\n`,
+
+      return {
+        title: bookDetails[0].title,
+        quantity: item.quantity,
+        totalPrice: typeof item.totalPrice === 'number' ? item.totalPrice.toFixed(2) : 'N/A',
       };
-  
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-  
-      const info = await transporter.sendMail(mailOptions);
-  
-      console.log('Order Confirmation Email sent to user');
-    } catch (error) {
-      console.error('Error sending order confirmation email:', error);
-    }
-  };
+    }));
 
+    const [orderDetails] = await connection.query(
+      'SELECT shipmentMethod FROM orders WHERE order_id = ?',
+      [orderId]
+    );
 
-  const sendOrderNotificationToOwner = async (userId, orderId, orderInfo, totalPrice) => {
-    try {
-      const [userDetails] = await connection.query(
-        'SELECT firstName, lastName, email, phoneNumber, city, street, building, floor FROM users WHERE user_id = ?',
-        [userId]
+    const shipmentMethod = orderDetails[0].shipmentMethod || 'delivery';
+
+    const totalWithDelivery = (parseFloat(totalPrice) + (shipmentMethod === 'delivery' ? 3 : 0)).toFixed(2);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: userEmail,
+      subject: 'Order Confirmation',
+      text: `Thank you ${userName} for your Order,\n`
+        + 'Your Order was made successfully\n\n'
+        + 'Order Details:\n'
+        + `Order ID: ${orderId}\n`
+        + 'Order Info:\n'
+        + booksDetails.map((item, index) => `${index + 1}- (${item.title}, ${item.quantity}, ${item.totalPrice})`).join('\n')
+        + `\nShipment Method: ${shipmentMethod}\n`
+        + `Total Price: ${totalWithDelivery} ${shipmentMethod === 'delivery' ? '(including $3 delivery cost)' : ''}\n`,
+    };
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Order Confirmation Email sent to user');
+  } catch (error) {
+    console.error('Error sending order confirmation email:', error);
+  }
+};
+
+const sendOrderNotificationToOwner = async (userId, orderId, orderInfo, totalPrice) => {
+  try {
+    const [userDetails] = await connection.query(
+      'SELECT firstName, lastName, email, phoneNumber, city, street, building, floor FROM users WHERE user_id = ?',
+      [userId]
+    );
+
+    const userName = `${userDetails[0].firstName} ${userDetails[0].lastName}`;
+    const userEmail = userDetails[0].email;
+    const userPhoneNumber = userDetails[0].phoneNumber;
+    const userLocation = `${userDetails[0].city}, ${userDetails[0].street}, ${userDetails[0].building}, ${userDetails[0].floor}`;
+
+    const booksDetails = await Promise.all(orderInfo.map(async (item) => {
+      const [bookDetails] = await connection.query(
+        'SELECT title FROM salebooks WHERE saleBook_id = ?',
+        [item.bookId]
       );
-  
-      const userName = `${userDetails[0].firstName} ${userDetails[0].lastName}`;
-      const userEmail = userDetails[0].email;
-      const userPhoneNumber = userDetails[0].phoneNumber;
-      const userLocation = `${userDetails[0].city}, ${userDetails[0].street}, ${userDetails[0].building}, ${userDetails[0].floor}`;
-  
-      const orderItems = orderInfo.split(' _ ');
-  
-      const booksDetails = await Promise.all(
-        orderItems.map(async (item) => {
-          const [bookDetails] = await connection.query(
-            'SELECT title, price FROM salebooks WHERE saleBook_id = ?',
-            [item.split(',')[0].slice(1)]
-          );
-          return {
-            title: bookDetails[0].title,
-            quantity: item.split(',')[1].trim(),
-            totalPrice: item.split(',')[2].slice(0, -1),
-          };
-        })
-      );
-  
-      const [orderDetails] = await connection.query(
-        'SELECT shipmentMethod FROM orders WHERE order_id = ?',
-        [orderId]
-      );
-  
-      const shipmentMethod = orderDetails[0].shipmentMethod || 'delivery';
-  
-      const totalWithDelivery = (parseFloat(totalPrice) + (shipmentMethod === 'delivery' ? 3 : 0)).toFixed(2);
-  
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_ADMIN, 
-        subject: 'Order Request',
-        text: `The user ${userName} placed an Order,\n`
-          + 'Order Details:\n'
-          + `orderId: ${orderId}\n`
-          + 'Order Info:\n'
-          + booksDetails.map((item, index) => `${index + 1}- (${item.title}, ${item.quantity}, ${item.totalPrice})`).join('\n')
-          + `\nShipment Method: ${shipmentMethod}\n`
-          + `Total Price: ${totalWithDelivery} ${shipmentMethod === 'delivery' ? '(including $3 delivery cost)' : ''}\n`
-          + `User Details:\n`
-          + `Email: ${userEmail}\n`
-          + `Phone Number: ${userPhoneNumber}\n`
-          + `Location: ${userLocation}\n`,
+
+      return {
+        title: bookDetails[0].title,
+        quantity: item.quantity,
+        totalPrice: typeof item.totalPrice === 'number' ? item.totalPrice.toFixed(2) : 'N/A',
       };
-  
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-  
-      const info = await transporter.sendMail(mailOptions);
-  
-      console.log('Order Notification Email sent to owner');
-    } catch (error) {
-      console.error('Error sending order notification email:', error);
-    }
-  };
+    }));
 
+    const [orderDetails] = await connection.query(
+      'SELECT shipmentMethod FROM orders WHERE order_id = ?',
+      [orderId]
+    );
+
+    const shipmentMethod = orderDetails[0].shipmentMethod || 'delivery';
+
+    const totalWithDelivery = (parseFloat(totalPrice) + (shipmentMethod === 'delivery' ? 3 : 0)).toFixed(2);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      subject: 'Order Request',
+      text: `The user ${userName} placed an Order,\n`
+        + 'Order Details:\n'
+        + `Order ID: ${orderId}\n`
+        + 'Order Info:\n'
+        + booksDetails.map((item, index) => `${index + 1}- (${item.title}, ${item.quantity}, ${item.totalPrice})`).join('\n')
+        + `\nShipment Method: ${shipmentMethod}\n`
+        + `Total Price: ${totalWithDelivery} ${shipmentMethod === 'delivery' ? '(including $3 delivery cost)' : ''}\n`
+        + `User Details:\n`
+        + `Email: ${userEmail}\n`
+        + `Phone Number: ${userPhoneNumber}\n`
+        + `Location: ${userLocation}\n`,
+    };
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Order Notification Email sent to owner');
+  } catch (error) {
+    console.error('Error sending order notification email:', error);
+  }
+};
 
 
 module.exports = {sendTradeRequestEmail, sendAcceptEmail, sendDeclineEmail, sendConfirmationCheckoutToUser, sendOrderNotificationToOwner};

@@ -13,7 +13,7 @@ const {
 
   const isAuthenticated = require('../middlewares/auth');
 
-  router.post('/checkout/:userId',isAuthenticated(['client']), checkout);
+  router.post('/checkout/:userId',checkout);
   router.delete('/delete/:orderId', isAuthenticated(['admin']), deleteById);
   router.put('/update/:orderId', isAuthenticated(['admin']), editById);
   router.get('/getAll', getAll)

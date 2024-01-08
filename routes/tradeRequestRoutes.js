@@ -22,10 +22,10 @@ const {
   router.get('/getById/:tradeRequestId', getById);
   router.get('/getByUser/:userRequestedId', getByUser);
   router.get('/getByTradeBook/:tradeBookId', getByTradeBook);
-  router.post('/RequestTrade', upload.single('image') , isAuthenticated(['admin']), RequestTrade );
-  router.delete('/delete/:tradeRequestId', isAuthenticated(['admin']), deleteById);
-  router.put('/accept/:tradeRequestId', upload.single('image') , isAuthenticated(['admin']), acceptRequest);
-  router.put('/decline/:tradeRequestId', upload.single('image') , isAuthenticated(['admin']), declineRequest)
+  router.post('/RequestTrade', upload.single('image') , isAuthenticated(['client']), RequestTrade );
+  router.delete('/delete/:tradeRequestId', isAuthenticated(['client']), deleteById);
+  router.put('/accept/:tradeRequestId', upload.single('image') , isAuthenticated(['client']), acceptRequest);
+  router.put('/decline/:tradeRequestId', upload.single('image') , isAuthenticated(['client']),declineRequest)
   
 
   module.exports = router; 
