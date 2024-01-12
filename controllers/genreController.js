@@ -2,9 +2,12 @@ const connection = require('../config/db');
 
 const getAll = async (_, res) => {
   const query = `
-    SELECT genres.*, COUNT(salebooks.saleBook_id) AS bookCount
+    SELECT genres.*, 
+           COUNT(salebooks.saleBook_id) AS saleBookCount,
+           COUNT(tradebooks.tradeBook_id) AS tradeBookCount
     FROM genres
     LEFT JOIN salebooks ON genres.genre_id = salebooks.genre_id
+    LEFT JOIN tradebooks ON genres.genre_id = tradebooks.genre_id
     GROUP BY genres.genre_id
   `;
   try {

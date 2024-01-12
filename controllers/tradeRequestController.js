@@ -150,7 +150,7 @@ const getByTradeBook = async (req, res) => {
 
 
 
-const RequestTrade = async (req, res) => {
+  const RequestTrade = async (req, res) => {
     console.log('RequestTrade route ');
     try {
         const file = req.file;
@@ -161,7 +161,7 @@ const RequestTrade = async (req, res) => {
             });
         }
 
-        const { tradebook_id, userRequested_id, bookName, bookCondition, description, location } = req.body;
+        const { tradebook_id, userRequested_id, bookName, description, location } = req.body;
 
         const checkQuery = `
             SELECT tradeRequest_id
@@ -183,11 +183,11 @@ const RequestTrade = async (req, res) => {
 
         const insertQuery = `
             INSERT INTO traderequests
-            (tradebook_id, userRequested_id, bookName, bookCondition, description, bookImage, location)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (tradebook_id, userRequested_id, bookName, description, bookImage, location)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
 
-        const insertValues = [tradebook_id, userRequested_id, bookName, bookCondition, description, imageUploadResult.downloadURL, location];
+        const insertValues = [tradebook_id, userRequested_id, bookName, description, imageUploadResult.downloadURL, location];
 
         const [response] = await connection.query(insertQuery, insertValues);
 
@@ -221,7 +221,6 @@ const RequestTrade = async (req, res) => {
                 tradebook_id,
                 userRequested_id,
                 bookName,
-                bookCondition,
                 description,
                 location,
             },

@@ -2,41 +2,45 @@ const connection = require('../config/db');
 const { FileUpload } = require("../extra/imageUploader");
 
 const getAll = async (_, res) => {
-    const query = `SELECT
-                    tb.tradeBook_id,
-                    tb.owner_id,
-                    CONCAT(u.firstName, ' ', u.lastName) AS ownerFullName,
-                    tb.title,
-                    tb.authorName,
-                    tb.genre_id,
-                    g.genreName,
-                    tb.description,
-                    tb.bookImage,
-                    tb.postDate
-                FROM
-                    tradebooks tb
-                JOIN
-                    genres g ON tb.genre_id = g.genre_id
-                JOIN
-                    users u ON tb.owner_id = u.user_id;`;
-    try {
-      const [response] = await connection.query(query);
-      return res.status(200).json({
-        success: true,
-        message: `All Books retrieved successfully.`,
-        data: response.map((item) => ({
-          ...item,
-          postDate: formatDate(item.postDate),
-        })),
-      });
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: `Unable to retrieve all Books.`,
-        error: error.message,
-      });
-    }
-  };
+  const query = `SELECT
+                  tb.tradeBook_id,
+                  tb.owner_id,
+                  CONCAT(u.firstName, ' ', u.lastName) AS ownerFullName,
+                  u.email AS ownerEmail,
+                  u.phoneNumber AS ownerPhone,
+                  u.city AS ownerCity,
+                  tb.title,
+                  tb.authorName,
+                  tb.genre_id,
+                  g.genreName,
+                  tb.description,
+                  tb.bookImage,
+                  tb.postDate
+              FROM
+                  tradebooks tb
+              JOIN
+                  genres g ON tb.genre_id = g.genre_id
+              JOIN
+                  users u ON tb.owner_id = u.user_id;`;
+  try {
+    const [response] = await connection.query(query);
+    return res.status(200).json({
+      success: true,
+      message: `All Books retrieved successfully.`,
+      data: response.map((item) => ({
+        ...item,
+        postDate: formatDate(item.postDate),
+      })),
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: `Unable to retrieve all Books.`,
+      error: error.message,
+    });
+  }
+};
+
 
   const getByOwnerId = async (req, res) => {
     const ownerId = req.params.ownerId;

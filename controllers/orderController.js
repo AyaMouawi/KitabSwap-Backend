@@ -263,10 +263,14 @@ const editById = async (req, res) => {
 
             const resolvedOrderDetails = await Promise.all(orderDetails);
 
+            const totalQuantity = resolvedOrderDetails.reduce((acc, item) => acc + item.quantity, 0);
+            const totalQuty = totalQuantity +" "+ 'books'
+
             return {
                 orderId: order.order_id,
                 userId: order.user_id,
                 total: order.total,
+                totalQuty, 
                 status: order.status,
                 shipmentMethod: order.shipmentMethod,
                 orderDate: formatDate(order.orderDate),
