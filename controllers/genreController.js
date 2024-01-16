@@ -4,7 +4,11 @@ const getAll = async (_, res) => {
   const query = `
     SELECT genres.*, 
            COUNT(salebooks.saleBook_id) AS saleBookCount,
-           COUNT(tradebooks.tradeBook_id) AS tradeBookCount
+           COUNT(tradebooks.tradeBook_id) AS tradeBookCount,
+           CASE
+             WHEN COUNT(DISTINCT salebooks.discount) = 1 THEN MAX(salebooks.discount)
+             ELSE '-'
+           END AS discount
     FROM genres
     LEFT JOIN salebooks ON genres.genre_id = salebooks.genre_id
     LEFT JOIN tradebooks ON genres.genre_id = tradebooks.genre_id
@@ -25,6 +29,7 @@ const getAll = async (_, res) => {
     });
   }
 };
+
 
 
   const getById = async (req, res) => {

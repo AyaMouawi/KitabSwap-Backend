@@ -171,22 +171,36 @@ const getAll = async (_, res) => {
   
   const login = async (req, res) => {
     const { email, password } = req.body;
-    const query = `SELECT * FROM users WHERE email = ?;`;
+    const query = `
+        SELECT 
+            role,
+            user_id as userId,
+            CONCAT(firstName, ' ', lastName) as userFullName,
+            CONCAT(city, ' ', street, ' ', building, ' ', floor) as userAddress,
+            email,
+            phoneNumber,
+            role,
+            password
+        FROM users 
+        WHERE email = ?;
+    `;
+
     try {
-      const [response] = await connection.query(query, [email]);
-  
-      if (!response.length)
-        return res.status(400).json({
-          success: false,
-          message: `User with email ${email} not found`,
-        });
-  
-      const validPassword = await bcrypt.compare(password, response[0].password);
-      if (!validPassword)
-        return res.status(400).json({
-          success: false,
-          message: `Entered password of email ${email} is wrong`,
-        });
+        const [response] = await connection.query(query, [email]);
+
+        if (!response.length)
+            return res.status(400).json({
+                success: false,
+                message: `User with email ${email} not found`,
+            });
+
+        const validPassword = await bcrypt.compare(password, response[0].password);
+
+        if (!validPassword)
+            return res.status(400).json({
+                success: false,
+                message: `Entered password for email ${email} is wrong`,
+            });
 
         const user = response[0];
         const auth = getAuth();
@@ -198,21 +212,28 @@ const getAll = async (_, res) => {
                 message: `Email not verified. We sent you a verification link via email. Please follow it.`,
             });
         }
-      const token = generateToken(response[0].ID, response[0].role);
-  
-      res.status(200).json({
-        success: true,
-        message: `User with email ${email} logged in successfully`,
-        token: token,
-      });
+
+        const { userId, userFullName, userAddress, role } = user;
+        const token = generateToken(userId, role);
+
+        res.status(200).json({
+            success: true,
+            message: `User with email ${email} logged in successfully`,
+            userId: userId,
+            role : role,
+            userFullName: userFullName,
+            userAddress: userAddress,
+            token: token,
+        });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: `Unable to login for user with email ${email}`,
-        error: error.message,
-      });
+        return res.status(400).json({
+            success: false,
+            message: `Unable to login for user with email ${email}`,
+            error: error.message,
+        });
     }
-  };
+};
+
   
   const register = async (req, res) => {
     const { firstName, lastName, email, password, phoneNumber, floor, building, street, city, additionalDescription, role } = req.body;

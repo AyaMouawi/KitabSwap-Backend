@@ -2,34 +2,40 @@ const connection = require('../config/db');
 const { FileUpload } = require("../extra/imageUploader");
 
 const getAll = async (_, res) => {
-    const query = `SELECT 
-                    sb.*,
-                    g.genreName,
-                    sb.price AS originalPrice,
-                    CASE
+  const query = `SELECT 
+                  sb.*,
+                  g.genreName,
+                  sb.price AS originalPrice,
+                  CASE
+                    WHEN sb.discount IS NOT NULL AND sb.discount != 0.00 THEN sb.discount
+                    ELSE '-'
+                  END AS discount,
+                  CASE
                     WHEN sb.discount IS NOT NULL AND sb.discount != 0.00 THEN ROUND(sb.price - (sb.price * (sb.discount / 100)), 2)
                     ELSE NULL
-                    END AS discountedPrice
-                FROM salebooks sb
-                JOIN genres g ON sb.genre_id = g.genre_id`;
-    try {
+                  END AS discountedPrice
+              FROM salebooks sb
+              JOIN genres g ON sb.genre_id = g.genre_id`;
+
+  try {
       const [response] = await connection.query(query);
       return res.status(200).json({
-        success: true,
-        message: `All Books retrieved successfully.`,
-        data: response.map((item) => ({
-          ...item,
-          postDate: formatDate(item.postDate),
-        })),
+          success: true,
+          message: `All Books retrieved successfully.`,
+          data: response.map((item) => ({
+              ...item,
+              postDate: formatDate(item.postDate),
+          })),
       });
-    } catch (error) {
+  } catch (error) {
       return res.status(400).json({
-        success: false,
-        message: `Unable to retrieve all Books.`,
-        error: error.message,
+          success: false,
+          message: `Unable to retrieve all Books.`,
+          error: error.message,
       });
-    }
-  };
+  }
+};
+
 
   const getById = async (req, res) => {
     const saleBookId = req.params.saleBookId;

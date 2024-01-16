@@ -281,7 +281,7 @@ const deleteById = async (req, res) => {
             JOIN users u ON tr.userRequested_id = u.user_id
             JOIN tradebooks tb ON tr.tradebook_id = tb.tradeBook_id
             WHERE tr.tradeRequest_id = ?`;
-        
+
         const [requestDetailsResponse] = await connection.query(requestDetailsQuery, [tradeRequestId]);
 
         const { userRequested_id, bookName, userRequestedName, tradebookTitle } = requestDetailsResponse[0];
@@ -292,6 +292,9 @@ const deleteById = async (req, res) => {
         const { email: ownerEmail, phoneNumber } = ownerDetailsResponse[0];
 
         await sendAcceptEmail(ownerEmail, userRequestedName, bookName, tradebookTitle, phoneNumber);
+
+        const deleteTradeBookQuery = `DELETE FROM tradebooks WHERE tradeBook_id = ?;`;
+        await connection.query(deleteTradeBookQuery, [requestDetailsResponse[0].tradebook_id]);
 
         return res.status(200).json({
             success: true,
