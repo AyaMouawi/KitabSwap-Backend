@@ -4,31 +4,36 @@ const { generateToken } = require('../extra/generateToken');
 const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } = require('firebase/auth');
 
 const getAll = async (_, res) => {
-    const query = `SELECT 
-                      user_id,
-                      CONCAT(firstName, ' ', lastName) AS fullName,
-                      email,
-                      phoneNumber,
-                      password,
-                      CONCAT(IFNULL(floor, ''), ' ', IFNULL(building, ''), ' ', IFNULL(street, ''), ' ', IFNULL(city, '')) AS address,
-                      additionalDescription,
-                      role
-                  FROM users;`;
-    try {
+  const query = `
+      SELECT 
+          u.user_id,
+          CONCAT(u.firstName, ' ', u.lastName) AS fullName,
+          u.email,
+          u.phoneNumber,
+          u.password,
+          CONCAT(IFNULL(u.floor, ''), ' ', IFNULL(u.building, ''), ' ', IFNULL(u.street, ''), ' ', IFNULL(u.city, '')) AS address,
+          u.additionalDescription,
+          u.role,
+          COUNT(o.order_id) AS orderCount
+      FROM users u
+      LEFT JOIN orders o ON u.user_id = o.user_id
+      GROUP BY u.user_id;
+  `;
+  try {
       const [response] = await connection.query(query);
       return res.status(200).json({
-        success: true,
-        message: `All users retrieved successfully `,
-        data: response,
+          success: true,
+          message: `All users and their order counts retrieved successfully `,
+          data: response,
       });
-    } catch (error) {
+  } catch (error) {
       return res.status(400).json({
-        success: false,
-        message: `Unable to get all users`,
-        error: error.message,
+          success: false,
+          message: `Unable to get all users and their order counts`,
+          error: error.message,
       });
-    }
-  };
+  }
+};
 
   const getById = async (req, res) => {
     const userId = req.params.userId;

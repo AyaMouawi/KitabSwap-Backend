@@ -1,59 +1,6 @@
 const connection = require('../config/db');
 const {sendConfirmationCheckoutToUser, sendOrderNotificationToOwner} = require('../extra/sendEmails')
 
-// const checkout = async (req, res) => {
-//     const userId = req.params.userId;
-  
-//     try {
-//       const [cartData] = await connection.query(
-//         'SELECT saleBook_id, quantity, total FROM cart WHERE user_id = ?',
-//         [userId]
-//       );
-  
-//       if (cartData.length === 0) {
-//         return res.status(404).json({
-//           success: false,
-//           message: 'Cart is empty for the given user.',
-//         });
-//       }
-  
-//       const totalPrice = cartData.reduce((sum, item) => sum + parseFloat(item.total), 0);
-  
-//       const orderInfo = cartData
-//         .map(item => `(${item.saleBook_id}, ${item.quantity}, ${item.total})`)
-//         .join(' _ ');
-  
-//       const [insertResponse] = await connection.query(
-//         'INSERT INTO orders (user_id, total, status, orderInfo, shipmentMethod) VALUES (?, ?, ?, ?, ?)',
-//         [userId, totalPrice, 'pending', orderInfo, 'delivery']
-//       );
-  
-//       await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
-
-//       sendConfirmationCheckoutToUser(userId, insertResponse.insertId, orderInfo, totalPrice);
-//       sendOrderNotificationToOwner(userId, insertResponse.insertId, orderInfo, totalPrice);
-  
-//       return res.status(200).json({
-//         success: true,
-//         message: 'Order placed successfully.',
-//         data: {
-//           orderId: insertResponse.insertId,
-//           userId: userId,
-//           orderInfo: orderInfo,
-//           totalPrice: totalPrice.toFixed(2), 
-//           status: 'pending',
-//           shipmentMethod: 'delivery',
-//         },
-//       });
-//     } catch (error) {
-//       return res.status(500).json({
-//         success: false,
-//         message: 'Unable to complete the checkout process.',
-//         error: error.message,
-//       });
-//     }
-//   };
-
 
 const checkout = async (req, res) => {
   const userId = req.params.userId;
@@ -332,19 +279,35 @@ const getById = async (req, res) => {
         const order = result[0];
         const orderInfo = JSON.parse(order.orderInfo);
 
-        const orderDetails = orderInfo.map(async (item) => {
+        const orderDetails = await Promise.all(orderInfo.map(async (item) => {
             const { bookId, quantity, totalPrice } = item;
-            const [book] = await connection.query('SELECT title FROM salebooks WHERE saleBook_id = ?', [bookId]);
-            const bookName = book.length > 0 ? book[0].title : null;
-            return {
-                bookId,
-                bookName,
-                quantity,
-                totalPrice: parseFloat(totalPrice),  
-            };
-        });
+            const [book] = await connection.query('SELECT * FROM salebooks WHERE saleBook_id = ?', [bookId]);
+            
+            if (book.length > 0) {
+                const { title, genre_id, authorName, price, description, book_image, status, discount, postDate } = book[0];
 
-        const resolvedOrderDetails = await Promise.all(orderDetails);
+                return {
+                    bookId,
+                    bookInfo: {
+                        title,
+                        genreId: genre_id,
+                        authorName,
+                        price: parseFloat(price),
+                        description,
+                        bookImage: book_image,
+                        status,
+                        discount: parseFloat(discount),
+                        postDate,
+                    },
+                    quantity,
+                    totalPrice: parseFloat(totalPrice),
+                };
+            } else {
+                return null; 
+            }
+        }));
+
+        const filteredOrderDetails = orderDetails.filter(item => item !== null);
 
         const formattedOrder = {
             orderId: order.order_id,
@@ -359,7 +322,7 @@ const getById = async (req, res) => {
                 userPhoneNumber: order.userPhoneNumber || '',
                 userLocation: `${order.userCity}, ${order.userStreet}, ${order.userBuilding}, ${order.userFloor}`.trim(),
             },
-            orderDetails: resolvedOrderDetails,
+            orderDetails: filteredOrderDetails,
         };
 
         return res.status(200).json({
@@ -374,7 +337,6 @@ const getById = async (req, res) => {
         });
     }
 };
-
   const formatDate = (date) => {
     try {
         const formattedDate = new Date(date).toISOString().split('T')[0];

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 const {
     getAll,
     getHighlighted,
@@ -17,7 +18,7 @@ const {
   router.get('/getById/:bannerId', getById);
   router.put('/update/:bannerId', isAuthenticated(['admin']), editById);
   router.delete('/delete/:bannerId', isAuthenticated(['admin']), deleteById);
-  router.post('/add',isAuthenticated(['admin']),add)
+  router.post('/add', upload.single('image') ,isAuthenticated(['admin']),add)
  
 
   module.exports = router;

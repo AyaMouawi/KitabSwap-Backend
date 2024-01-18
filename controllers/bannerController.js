@@ -1,4 +1,5 @@
 const connection = require('../config/db');
+const { FileUpload } = require('../extra/imageUploader');
 
 const getAll = async (_, res) => {
     const query = `SELECT * FROM banner`;
@@ -161,7 +162,14 @@ const getAll = async (_, res) => {
 
     const add = async (req, res) => {
       const { content, buttonText, link } = req.body;
-
+    
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Image file is required.',
+        });
+      }
+    
       const validLinkFormat = isValidLink(link);
       if (!validLinkFormat) {
         return res.status(400).json({
@@ -170,15 +178,22 @@ const getAll = async (_, res) => {
         });
       }
     
-      const query = `INSERT INTO banner (content, buttonText, link) VALUES (?, ?, ?)`;
-    
       try {
-        const [response] = await connection.query(query, [content, buttonText, link]);
+        const fileUploadResponse = await FileUpload(req.file);
+    
+        const query = `INSERT INTO banner (content, buttonText, link, image) VALUES (?, ?, ?, ?)`;
+        const [response] = await connection.query(query, [content, buttonText, link, fileUploadResponse.downloadURL]);
     
         return res.status(201).json({
           success: true,
           message: 'Banner added successfully.',
-          data: { bannerId: response.insertId, content, buttonText, link},
+          data: {
+            bannerId: response.insertId,
+            content,
+            buttonText,
+            link,
+            image: fileUploadResponse,
+          },
         });
       } catch (error) {
         return res.status(400).json({
@@ -190,9 +205,8 @@ const getAll = async (_, res) => {
     };
     
     const isValidLink = (link) => {
-      const urlRegex = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+      const urlRegex = /^(https?:\/\/)?([\w-]+\.+[\w-]+)+([/?].*)?$/;
       return urlRegex.test(link);
     };
-  
 
   module.exports = { getAll, getHighlighted, getById, editById, deleteById, add};

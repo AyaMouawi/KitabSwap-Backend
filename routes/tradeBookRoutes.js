@@ -19,9 +19,9 @@ const {
   router.get('/getAll', getAll);
   router.get('/getByOwner/:ownerId', getByOwnerId);
   router.get('/getById/:tradeBookId', getById);
-  router.delete('/delete/:tradeBookId', isAuthenticated(['admin']), deleteById);
-  router.post('/add', upload.single('image') , isAuthenticated(['admin']), add );
-  router.put('/update/:tradeBookId', upload.single('image') , isAuthenticated(['admin']), editById)
+  router.delete('/delete/:tradeBookId', isAuthenticated(['client']), deleteById);
+  router.post('/add', upload.single('image') , isAuthenticated(['client']), add );
+  router.put('/update/:tradeBookId', upload.single('image') , isAuthenticated(['client']), editById)
   
 
   module.exports = router; 

@@ -24,7 +24,7 @@ const {
   router.get('/getByTradeBook/:tradeBookId', getByTradeBook);
   router.post('/RequestTrade', upload.single('image') , isAuthenticated(['client']), RequestTrade );
   router.delete('/delete/:tradeRequestId', isAuthenticated(['client']), deleteById);
-  router.put('/accept/:tradeRequestId', upload.single('image') , acceptRequest);
+  router.put('/accept/:tradeRequestId', upload.single('image') ,isAuthenticated(['client']), acceptRequest);
   router.put('/decline/:tradeRequestId', upload.single('image') , isAuthenticated(['client']),declineRequest)
   
 
