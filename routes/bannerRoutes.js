@@ -8,7 +8,8 @@ const {
     getById,
     editById,
     deleteById,
-    add
+    add,
+    Highlite,
   } = require('../controllers/bannerController');
 
   const isAuthenticated = require('../middlewares/auth');
@@ -18,7 +19,8 @@ const {
   router.get('/getById/:bannerId', getById);
   router.put('/update/:bannerId', isAuthenticated(['admin']), editById);
   router.delete('/delete/:bannerId', isAuthenticated(['admin']), deleteById);
-  router.post('/add', upload.single('image') ,isAuthenticated(['admin']),add)
+  router.post('/add', upload.single('image') ,isAuthenticated(['admin']),add);
+  router.put('/highlite/:bannerId',isAuthenticated(['admin']), Highlite);
  
 
   module.exports = router;

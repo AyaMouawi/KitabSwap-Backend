@@ -209,4 +209,40 @@ const getAll = async (_, res) => {
       return urlRegex.test(link);
     };
 
-  module.exports = { getAll, getHighlighted, getById, editById, deleteById, add};
+    const Highlite = async (req, res) => {
+      const bannerId = req.params.bannerId;
+      const { highlight } = req.body;
+    
+
+      try {
+        
+        await connection.query('UPDATE banner SET highlight = 0');
+    
+        const result = await connection.query(
+          'UPDATE banner SET highlight = ? WHERE banner_id = ?',
+          [highlight || 1, bannerId]
+        );
+    
+        if (result.affectedRows === 0) {
+          return res.status(404).json({
+            success: false,
+            message: `Banner with id ${bannerId} not found`,
+          });
+        }
+    
+        res.status(200).json({
+          success: true,
+          message: 'Data updated successfully',
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({
+          success: false,
+          message: 'Unable to update data',
+          error: error.message,
+        });
+      }
+    };
+
+
+  module.exports = { getAll, getHighlighted, getById, editById, deleteById, add, Highlite};

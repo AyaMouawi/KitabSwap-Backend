@@ -193,31 +193,31 @@ const editById = async (req, res) => {
 
         const [result] = await connection.query(query);
 
-        const formattedResult = result.map(async (order) => {
+        const formattedResult = await Promise.all(result.map(async (order) => {
             const orderInfo = JSON.parse(order.orderInfo);
 
-            const orderDetails = orderInfo.map(async (item) => {
+            const orderDetails = await Promise.all(orderInfo.map(async (item) => {
                 const { bookId, quantity, totalPrice } = item;
-                const [book] = await connection.query('SELECT title FROM salebooks WHERE saleBook_id = ?', [bookId]);
+                const [book] = await connection.query('SELECT title, book_image FROM salebooks WHERE saleBook_id = ?', [bookId]);
                 const bookName = book.length > 0 ? book[0].title : null;
+                const bookImage = book.length > 0 ? book[0].book_image : null;
                 return {
                     bookId,
                     bookName,
+                    bookImage,
                     quantity,
                     totalPrice: parseFloat(totalPrice),  
                 };
-            });
+            }));
 
-            const resolvedOrderDetails = await Promise.all(orderDetails);
-
-            const totalQuantity = resolvedOrderDetails.reduce((acc, item) => acc + item.quantity, 0);
-            const totalQuty = totalQuantity +" "+ 'books'
+            const totalQuantity = orderDetails.reduce((acc, item) => acc + item.quantity, 0);
+            const totalQuty = totalQuantity + " " + 'books';
 
             return {
                 orderId: order.order_id,
                 userId: order.user_id,
                 total: order.total,
-                totalQuty, 
+                totalQuty,
                 status: order.status,
                 shipmentMethod: order.shipmentMethod,
                 orderDate: formatDate(order.orderDate),
@@ -227,15 +227,13 @@ const editById = async (req, res) => {
                     userPhoneNumber: order.userPhoneNumber || '',
                     userLocation: `${order.userCity}, ${order.userStreet}, ${order.userBuilding}, ${order.userFloor}`.trim(),
                 },
-                orderDetails: resolvedOrderDetails,
+                orderDetails,
             };
-        });
-
-        const resolvedResult = await Promise.all(formattedResult);
+        }));
 
         return res.status(200).json({
             success: true,
-            data: resolvedResult,
+            data: formattedResult,
         });
     } catch (error) {
         return res.status(500).json({

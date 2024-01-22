@@ -7,7 +7,9 @@ const {
     updateUser,
     deleteById,
     login,
-    register
+    register,
+    getAddress,
+    updateAddress
   } = require('../controllers/userController');
 
   const isAuthenticated = require('../middlewares/auth');
@@ -18,5 +20,8 @@ const {
   router.delete('/delete/:userId',isAuthenticated(['admin']),deleteById);
   router.post('/login', login);
   router.post('/register', register);
+  router.get('/getAddress/:userId', getAddress);
+  router.put('/updateAddress/:userId', updateAddress);
+
 
   module.exports = router;

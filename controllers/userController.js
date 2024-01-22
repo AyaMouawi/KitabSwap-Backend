@@ -324,9 +324,106 @@ const getAll = async (_, res) => {
       });
     }
   };
+
+  const getAddress = async (req, res) => {
+    const userId = req.params.userId;
+    const query = `SELECT 
+                      floor,
+                      building,
+                      street,
+                      city,
+                      additionalDescription
+                    FROM users
+                    WHERE user_id = ?;`;
+    try {
+      const [response] = await connection.query(query, [userId]);
+  
+      if (response.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `User with id ${userId} not found`,
+        });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: `Address data for user with id ${userId} retrieved successfully `,
+        data: response[0],
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: `Unable to get address data for user with id ${userId}`,
+        error: error.message,
+      });
+    }
+  };
+
+  const updateAddress = async (req, res) => {
+  const userId = req.params.userId;
+  const { floor, building, street, city, additionalDescription } = req.body;
+
+  try {
+    const [userCheck] = await connection.query(`SELECT * FROM users WHERE user_id = ?`, [userId]);
+
+    if (userCheck.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `User with id ${userId} not found`,
+      });
+    }
+
+    const updates = [];
+    if (floor !== undefined) updates.push(`floor = ?`);
+    if (building !== undefined) updates.push(`building = ?`);
+    if (street !== undefined) updates.push(`street = ?`);
+    if (city !== undefined) updates.push(`city = ?`);
+    if (additionalDescription !== undefined) updates.push(`additionalDescription = ?`);
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields to update.',
+      });
+    }
+
+    const setClause = updates.join(', ');
+
+    const result = await connection.query(
+      `UPDATE users 
+       SET ${setClause} 
+       WHERE user_id = ?`,
+      [...Object.values(req.body).filter((value) => value !== undefined), userId]
+    );
+
+    console.log(result);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({
+        success: false,
+        message: `No rows were updated for user with id ${userId}`,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Address data updated successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Unable to update address data',
+      error: error.message,
+    });
+  }
+};
+
+
+  
   
   
   
 
 
-  module.exports = {getAll, getById, updateUser, deleteById, login, register}
+  module.exports = {getAll, getById, updateUser, deleteById, login, register, getAddress, updateAddress}
