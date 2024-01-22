@@ -21,7 +21,7 @@ const {
   router.post('/login', login);
   router.post('/register', register);
   router.get('/getAddress/:userId', getAddress);
-  router.put('/updateAddress/:userId', updateAddress);
+  router.put('/updateAddress/:userId',isAuthenticated(['client']), updateAddress);
 
 
   module.exports = router;

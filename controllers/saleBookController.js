@@ -114,7 +114,7 @@ const getAll = async (_, res) => {
 
   const deleteById = async (req, res) => {
     const saleBookId = req.params.saleBookId;
-    const query = `DELETE FROM saleBooks WHERE saleBook_id = ?;`;
+    const query = `DELETE FROM salebooks WHERE saleBook_id = ?;`;
     try {
       const [response] = await connection.query(query, [saleBookId]);
       if (!response.affectedRows)
