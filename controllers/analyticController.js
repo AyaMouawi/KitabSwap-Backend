@@ -2,7 +2,7 @@ const connection = require('../config/db');
 
 const getAnalytics = async (req, res) => {
     try {
-      // First, get Total Sales, Total Orders, and Total Users
+
       const [totals] = await connection.query(`
         SELECT 
           (SELECT COUNT(DISTINCT user_id) FROM users) AS TotalUsers,
@@ -10,8 +10,7 @@ const getAnalytics = async (req, res) => {
           SUM(total) AS TotalSales
         FROM orders;
       `);
-  
-      // Second, get Orders per Month
+
       const [ordersPerMonth] = await connection.query(`
         SELECT 
           MONTH(orderDate) AS Month,
@@ -19,8 +18,7 @@ const getAnalytics = async (req, res) => {
         FROM orders
         GROUP BY Month;
       `);
-  
-      // Third, get Best Seller Categories
+
       const [bestSellerCategories] = await connection.query(`
       SELECT 
       g.genreName AS Category,
@@ -38,7 +36,7 @@ const getAnalytics = async (req, res) => {
         ORDER BY OrdersCount DESC;
       `);
   
-      // Fourth, get Trade per Month
+    
       const [tradePerMonth] = await connection.query(`
         SELECT 
           MONTH(postDate) AS Month,
