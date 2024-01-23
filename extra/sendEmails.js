@@ -44,7 +44,7 @@ const sendAcceptEmail = async (ownerEmail, userRequestedName, bookName, ownerBoo
             to: ownerEmail,
             subject: 'Trade Request Accepted',
             text: `your request to trade "${ownerBookName}" with "${bookName}"  has been accepted .\n`
-                + `Please feel free to contact the owner "${ownerEmail}" or by their phone number  ${ownerPhoneNumber}`,
+                + `Please check your dashboard for more info`,
         };
 
           
