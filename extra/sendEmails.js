@@ -16,12 +16,9 @@ const sendTradeRequestEmail = async (ownerEmail, userRequestedName, userEmail, p
             from: process.env.EMAIL_USER,
             to: ownerEmail,
             subject: 'New Trade Request',
-            text: `User requested to trade the book with title "${bookName}" with your book "${tradebookTitle}".\n\n`
-                + `User Details:\n`
-                + `Full Name: ${userRequestedName}\n`
-                + `Email: ${userEmail}\n`
-                + `Phone Number: ${phoneNumber}\n`
-                + `Location: ${location}\n`,
+            text: `You got a request to trade the book with title "${bookName}" with your book "${tradebookTitle}".\n\n`
+                + `Please Check your dashboard for more info. \n`
+
         };
 
         const info = await transporter.sendMail(mailOptions);
