@@ -46,9 +46,11 @@ const sendAcceptEmail = async (ownerEmail, userRequestedName, bookName, ownerBoo
             from: process.env.EMAIL_USER,
             to: ownerEmail,
             subject: 'Trade Request Accepted',
-            text: `The user "${userRequestedName}" has accepted your trade your book "${bookName}" with their book "${ownerBookName}".\n`
-                + `Please feel free to contact them on their phone number: ${ownerPhoneNumber}`,
+            text: `your request to trade "${ownerBookName}" with "${bookName}"  has been accepted .\n`
+                + `Please feel free to contact the owner "${ownerEmail}" or by their phone number  ${ownerPhoneNumber}`,
         };
+
+          
 
         const info = await transporter.sendMail(mailOptions);
 
@@ -72,7 +74,7 @@ const sendDeclineEmail = async (ownerEmail, userRequestedName, bookName, ownerBo
             from: process.env.EMAIL_USER,
             to: ownerEmail,
             subject: 'Trade Request Declined',
-            text: `The user "${userRequestedName}" has declined your trade request for your book "${bookName}" with their book "${ownerBookName}".`,
+            text: `The trade request for your book "${bookName}" with the book "${ownerBookName}" has been declined.`,
         };
 
         const info = await transporter.sendMail(mailOptions);
